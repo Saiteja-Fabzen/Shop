@@ -16,9 +16,48 @@ const API_BASE_URL = 'https://test.api.empiregames.in';
 class ApiService {
   private getAuthToken(): string | null {
     if (typeof window !== 'undefined') {
+      // First try to get token from URL parameters
+      const urlParams = new URLSearchParams(window.location.search);
+      const tokenFromUrl = urlParams.get('token');
+
+      if (tokenFromUrl) {
+        // Store in localStorage for future use
+        localStorage.setItem('authToken', tokenFromUrl);
+
+        // Clean URL by removing token parameter
+        this.cleanTokenFromUrl();
+
+        return tokenFromUrl;
+      }
+
+      // Fallback to localStorage
       return localStorage.getItem('authToken');
     }
     return null;
+  }
+
+  private cleanTokenFromUrl(): void {
+    if (typeof window !== 'undefined') {
+      const url = new URL(window.location.href);
+      url.searchParams.delete('token');
+
+      // Update URL without reloading the page
+      window.history.replaceState({}, document.title, url.toString());
+    }
+  }
+
+  // Public method to set token programmatically
+  public setAuthToken(token: string): void {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('authToken', token);
+    }
+  }
+
+  // Public method to clear token
+  public clearAuthToken(): void {
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('authToken');
+    }
   }
 
   private async request<T>(endpoint: string, options?: RequestInit): Promise<T> {
@@ -70,11 +109,16 @@ class ApiService {
   }
 
   async submitOrder(orderData: OrderRequest): Promise<OrderResponse> {
+    const token = this.getAuthToken();
+    if (!token) {
+      throw new Error('Authentication token required for order submission');
+    }
+
     return this.request<OrderResponse>('/shopping/orders', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2OGJkMDU4M2Q3ZGI5MTVjOGYyZGZkNmEiLCJyb2xlcyI6WyJwbGF5ZXIiXSwiaWF0IjoxNzU4NjA4NTY1LCJleHAiOjE3NTkyMTMzNjV9.s_9T3bG4QHAS9GYdWFch63A1NHDbJFBoe2jmVUpvzxIVnbCAj1LNV_7RSP7j9cJQ7NqBE7AtAZQ4vwmBLSL90w`
+        'Authorization': `Bearer ${token}`
       },
       body: JSON.stringify(orderData),
     });
@@ -98,7 +142,7 @@ class ApiService {
     const endpoint = `/shopping/orders/history`;
     return this.request<OrderHistoryResponse>(endpoint, {
       headers: {
-        'Authorization': `Bearer eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2NjZkNDhlNmI1ZjU1NWI2MjRlOWI2NTgiLCJyb2xlcyI6WyJwbGF5ZXIiLCJhZG1pbiJdLCJpYXQiOjE3NTg1MjIwNDIsImV4cCI6MTc1OTEyNjg0Mn0.laq4wcVRigvrmznu0-Ae7YQBU8BKe7jOMfS2RlSqQzUfQofqoovjZ6_Zb557gpaTQPxmGpyKQocWV6NEdDnMkQ`,
+        'Authorization': `Bearer ${token}`,
       },
     });
   }
@@ -111,15 +155,20 @@ class ApiService {
 
     return this.request<OrderDetailsResponse>(`/shopping/orders/${orderId}`, {
       headers: {
-        'Authorization': `Bearer eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2NjZkNDhlNmI1ZjU1NWI2MjRlOWI2NTgiLCJyb2xlcyI6WyJwbGF5ZXIiLCJhZG1pbiJdLCJpYXQiOjE3NTg1MjIwNDIsImV4cCI6MTc1OTEyNjg0Mn0.laq4wcVRigvrmznu0-Ae7YQBU8BKe7jOMfS2RlSqQzUfQofqoovjZ6_Zb557gpaTQPxmGpyKQocWV6NEdDnMkQ`,
+        'Authorization': `Bearer ${token}`,
       },
     });
   }
 
   async getWallet(): Promise<WalletResponse> {
+    const token = this.getAuthToken();
+    if (!token) {
+      throw new Error('Authentication token required for wallet access');
+    }
+
     return this.request<WalletResponse>('/users/wallet', {
       headers: {
-        'Authorization': `Bearer eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2OGJkMDU4M2Q3ZGI5MTVjOGYyZGZkNmEiLCJyb2xlcyI6WyJwbGF5ZXIiXSwiaWF0IjoxNzU4NjA4NTY1LCJleHAiOjE3NTkyMTMzNjV9.s_9T3bG4QHAS9GYdWFch63A1NHDbJFBoe2jmVUpvzxIVnbCAj1LNV_7RSP7j9cJQ7NqBE7AtAZQ4vwmBLSL90w`,
+        'Authorization': `Bearer ${token}`,
       },
     });
   }
