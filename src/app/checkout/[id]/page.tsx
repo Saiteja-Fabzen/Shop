@@ -7,6 +7,7 @@ import { ApiProduct } from '@/types/api';
 import { apiService } from '@/services/api';
 import CustomLoader from '@/components/CustomLoader';
 import LoadingSpinner from '@/components/LoadingSpinner';
+import WalletButton from '@/components/WalletButton';
 
 const indianStates = [
   'Andaman and Nicobar Islands',
@@ -57,6 +58,8 @@ export default function Checkout({ params }: { params: Promise<{ id: string }> }
   const [submitting, setSubmitting] = useState(false);
   const [selectedVariation, setSelectedVariation] = useState<string>('');
   const [quantity, setQuantity] = useState(1);
+  const [walletBalance, setWalletBalance] = useState<number>(0);
+  const [walletLoading, setWalletLoading] = useState(true);
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -71,12 +74,15 @@ export default function Checkout({ params }: { params: Promise<{ id: string }> }
     state: ''
   });
 
-  const balance = 0; // This would come from user context/state
+  const balance = walletBalance;
   const required = product ?
     (selectedVariation ?
       product.variations.find(v => v.name === selectedVariation)?.price || product.price
       : product.price) * quantity
     : 0;
+
+  const isBalanceSufficient = balance >= required;
+  const shortfall = required - balance;
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -93,7 +99,21 @@ export default function Checkout({ params }: { params: Promise<{ id: string }> }
       }
     };
 
+    const fetchWalletBalance = async () => {
+      try {
+        setWalletLoading(true);
+        const walletData = await apiService.getWallet();
+        setWalletBalance(parseFloat(walletData.shop));
+      } catch (error) {
+        console.error('Failed to fetch wallet balance:', error);
+        setWalletBalance(0);
+      } finally {
+        setWalletLoading(false);
+      }
+    };
+
     fetchProduct();
+    fetchWalletBalance();
   }, [resolvedParams.id]);
 
   const handleInputChange = (field: string, value: string) => {
@@ -116,6 +136,12 @@ export default function Checkout({ params }: { params: Promise<{ id: string }> }
 
   const handleSubmitOrder = async () => {
     if (!product) return;
+
+    // Check balance before submitting
+    if (!isBalanceSufficient) {
+      alert(`Insufficient balance! You need ₹${shortfall.toLocaleString()} more to complete this order.`);
+      return;
+    }
 
     setSubmitting(true);
     try {
@@ -146,24 +172,37 @@ export default function Checkout({ params }: { params: Promise<{ id: string }> }
 
       const response = await apiService.submitOrder(orderData);
 
-      if (response.status === 'success') {
+      if (response.success === true) {
         alert('Order submitted successfully!');
-        router.push('/'); // Redirect to home or order confirmation page
+        router.push('/orders'); // Redirect to orders page
       } else {
-        alert('Failed to submit order. Please try again.');
+        console.error('Order submission failed:', response);
+        alert(`Failed to submit order: ${response.message || 'Unknown error'}`);
       }
     } catch (error) {
       console.error('Error submitting order:', error);
-      alert('Error submitting order. Please try again.');
+
+      // More detailed error logging
+      if (error instanceof Error) {
+        console.error('Error message:', error.message);
+        alert(`Error submitting order: ${error.message}`);
+      } else {
+        console.error('Unknown error:', error);
+        alert('Unknown error submitting order. Please try again.');
+      }
     } finally {
       setSubmitting(false);
     }
   };
 
   const handleTopUp = () => {
-    console.log('Top up clicked');
-    // For now, just submit the order directly
-    handleSubmitOrder();
+    // If balance is sufficient, submit order
+    if (isBalanceSufficient) {
+      handleSubmitOrder();
+    } else {
+      // Show message about insufficient balance
+      alert(`Insufficient balance! You need ₹${shortfall.toLocaleString()} more to complete this order.`);
+    }
   };
 
   const renderStepIndicator = () => (
@@ -401,11 +440,11 @@ export default function Checkout({ params }: { params: Promise<{ id: string }> }
         <div className="text-center">
           <h3 className="text-white text-xl font-bold mb-2">{product.name}</h3>
           <div className="flex items-center justify-center mb-4">
-            <div className="w-6 h-6 bg-yellow-500 rounded-full flex items-center justify-center mr-2">
-              <span className="text-xs font-bold text-purple-900">₹</span>
-            </div>
+            <WalletButton size="large" className="text-white" />
+          </div>
+          <div className="text-center mb-4">
             <span className="text-white font-bold text-2xl">
-              {required.toLocaleString()}
+              Required: {required.toLocaleString()}
             </span>
             {quantity > 1 && (
               <span className="text-gray-400 text-sm ml-2">
@@ -437,16 +476,37 @@ export default function Checkout({ params }: { params: Promise<{ id: string }> }
       </div>
 
       {/* Balance Status */}
-      <div className="bg-yellow-500/20 border border-yellow-500 rounded-lg p-4">
-        <div className="flex items-center">
-          <span className="text-yellow-500 mr-2">⚠</span>
-          <span className="text-yellow-500 font-medium">Insufficient balance</span>
+      {walletLoading ? (
+        <div className="bg-gray-500/20 border border-gray-500 rounded-lg p-4">
+          <div className="flex items-center">
+            <span className="text-gray-500 mr-2">⏳</span>
+            <span className="text-gray-500 font-medium">Checking balance...</span>
+          </div>
         </div>
-      </div>
+      ) : isBalanceSufficient ? (
+        <div className="bg-green-500/20 border border-green-500 rounded-lg p-4">
+          <div className="flex items-center">
+            <span className="text-green-500 mr-2">✓</span>
+            <span className="text-green-500 font-medium">Sufficient balance</span>
+          </div>
+        </div>
+      ) : (
+        <div className="bg-red-500/20 border border-red-500 rounded-lg p-4">
+          <div className="flex items-center flex-col space-y-2">
+            <div className="flex items-center">
+              <span className="text-red-500 mr-2">⚠</span>
+              <span className="text-red-500 font-medium">Insufficient balance</span>
+            </div>
+            <div className="text-red-400 text-sm">
+              You need ₹{shortfall.toLocaleString()} more to complete this order
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="flex items-center justify-between text-white">
-        <span>Balance: {balance}</span>
-        <span>Required: {required.toLocaleString()}</span>
+        <span>Balance: {walletLoading ? '...' : `₹${balance.toLocaleString()}`}</span>
+        <span>Required: ₹{required.toLocaleString()}</span>
       </div>
     </div>
   );
@@ -511,16 +571,24 @@ export default function Checkout({ params }: { params: Promise<{ id: string }> }
           ) : (
             <button
               onClick={handleTopUp}
-              disabled={submitting}
-              className="w-full bg-gradient-button text-black font-bold py-4 px-6 rounded-full hover:opacity-90 transition-opacity disabled:opacity-50"
+              disabled={submitting || walletLoading}
+              className={`w-full font-bold py-4 px-6 rounded-full transition-opacity disabled:opacity-50 ${
+                walletLoading ? 'bg-gray-500 text-white'
+                : isBalanceSufficient ? 'bg-gradient-button text-black hover:opacity-90'
+                : 'bg-red-600 text-white hover:bg-red-700'
+              }`}
             >
               {submitting ? (
                 <div className="flex items-center justify-center space-x-2">
                   <LoadingSpinner size="sm" color="secondary" />
                   <span>Submitting Order...</span>
                 </div>
-              ) : (
+              ) : walletLoading ? (
+                'Checking Balance...'
+              ) : isBalanceSufficient ? (
                 `Submit Order ₹${required.toLocaleString()} →`
+              ) : (
+                `Insufficient Balance (₹${shortfall.toLocaleString()} short)`
               )}
             </button>
           )}

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import React from 'react';
 import { useRouter } from 'next/navigation';
 import Header from '@/components/Header';
 import ApiCategoryGrid from '@/components/ApiCategoryGrid';
@@ -9,11 +9,6 @@ import SuggestionSection from '@/components/SuggestionSection';
 
 export default function HomePage() {
   const router = useRouter();
-  const [balance, setBalance] = useState(0);
-
-  const handleAddBalance = () => {
-    setBalance(prev => prev + 1000);
-  };
 
   const handleProductSelect = (productId: string) => {
     router.push(`/product/${productId}`);
@@ -30,7 +25,7 @@ export default function HomePage() {
   return (
     <div className="min-h-screen flex justify-center">
       <div className="w-full max-w-md mx-auto bg-gradient-to-b from-[#1a1a2e] to-[#16213e] min-h-screen">
-        <Header balance={balance} onAddBalance={handleAddBalance} />
+        <Header />
 
         <main className="overflow-auto">
         <ApiCategoryGrid onCategorySelect={handleCategorySelect} />

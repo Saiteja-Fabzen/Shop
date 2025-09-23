@@ -1,3 +1,5 @@
+import Image from 'next/image';
+
 interface Product {
   id: string;
   name: string;
@@ -33,10 +35,18 @@ export default function RedeemSection({ products, onRedeem }: RedeemSectionProps
             <div className="text-white text-center">
               <p className="text-xs font-medium mb-1">{product.name}</p>
               <div className="flex items-center justify-center mb-2">
-                <div className="w-4 h-4 bg-yellow-500 rounded-full flex items-center justify-center mr-1">
-                  <span className="text-xs font-bold text-purple-900">₹</span>
+                <div className="flex items-center border border-yellow-300 bg-gradient-to-b from-yellow-400 via-yellow-300 to-yellow-400 rounded-full px-2 py-1">
+                  <div className="w-3 h-3 mr-1">
+                    <Image
+                      src="/images/gems.png"
+                      alt="Gems"
+                      width={12}
+                      height={12}
+                      className="w-full h-full object-contain"
+                    />
+                  </div>
+                  <span className="text-xs font-semibold text-orange-800">{product.price}</span>
                 </div>
-                <span className="text-sm font-bold">{product.price}</span>
                 <span className="text-xs text-gray-300 ml-1">more required</span>
               </div>
               <button 

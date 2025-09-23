@@ -7,6 +7,7 @@ import { ApiProduct } from '@/types/api';
 import { apiService } from '@/services/api';
 import CustomLoader from '@/components/CustomLoader';
 import ImageCarousel from '@/components/ImageCarousel';
+import WalletButton from '@/components/WalletButton';
 
 export default function ProductDetail({ params }: { params: Promise<{ id: string }> }) {
   const router = useRouter();
@@ -79,13 +80,7 @@ export default function ProductDetail({ params }: { params: Promise<{ id: string
             <h1 className="text-sm font-bold flex-1 text-center mx-2 leading-tight line-clamp-2 overflow-hidden">
               {product.name}
             </h1>
-            <div className="flex items-center bg-purple-700/50 rounded-full px-3 py-2 flex-shrink-0 mt-1">
-              <div className="w-6 h-6 bg-yellow-500 rounded-full flex items-center justify-center mr-2">
-                <span className="text-xs font-bold text-purple-900">₹</span>
-              </div>
-              <span className="font-bold">1</span>
-              <button className="ml-2 text-lg">+</button>
-            </div>
+            <WalletButton size="medium" className="mt-1" />
           </div>
         </header>
 

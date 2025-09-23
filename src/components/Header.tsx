@@ -1,12 +1,8 @@
-import { ShoppingBag, Plus } from 'lucide-react';
+import { ShoppingBag } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import WalletButton from './WalletButton';
 
-interface HeaderProps {
-  balance: number;
-  onAddBalance?: () => void;
-}
-
-export default function Header({ balance = 0, onAddBalance }: HeaderProps) {
+export default function Header() {
   const router = useRouter();
 
   const handleOrdersClick = () => {
@@ -19,19 +15,7 @@ export default function Header({ balance = 0, onAddBalance }: HeaderProps) {
         <h1 className="text-xl font-bold">Shop</h1>
         
         <div className="flex items-center space-x-2">
-          <div className="flex items-center bg-purple-700/50 rounded-full px-3 py-2">
-            <div className="w-6 h-6 bg-yellow-500 rounded-full flex items-center justify-center mr-2">
-              <span className="text-xs font-bold text-purple-900">₹</span>
-            </div>
-            <span className="font-bold">{balance}</span>
-            <button 
-              onClick={onAddBalance}
-              className="ml-2 p-1 hover:bg-purple-600/50 rounded-full transition-colors tap-target btn-scale"
-              aria-label="Add balance"
-            >
-              <Plus size={16} />
-            </button>
-          </div>
+          <WalletButton size="small" />
         </div>
       </div>
       

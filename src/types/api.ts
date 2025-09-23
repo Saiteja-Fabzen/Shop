@@ -91,9 +91,13 @@ export interface OrderRequest {
 }
 
 export interface OrderResponse {
-  status: string;
-  message?: string;
-  orderId?: string;
+  success: boolean;
+  message: string;
+  orderId: string;
+  trackingNumber: string;
+  estimatedDeliveryDate: string;
+  newShopWalletBalance: number;
+  totalShopWalletAmount: number;
 }
 
 export interface ProductFilters {
@@ -151,4 +155,12 @@ export interface OrderDetailsResponse {
 export interface OrderHistoryFilters {
   skip?: number;
   limit?: number;
+}
+
+export interface WalletResponse {
+  main: string;
+  win: string;
+  bonus: string;
+  free: string;
+  shop: string;
 }
