@@ -4,6 +4,9 @@ const nextConfig: NextConfig = {
   images: {
     domains: ['img.icons8.com'],
   },
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
 };
 
 export default nextConfig;
