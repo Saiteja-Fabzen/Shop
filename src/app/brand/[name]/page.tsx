@@ -99,8 +99,7 @@ export default function BrandProductsPage({ params }: { params: Promise<{ name: 
                   <ApiProductCard
                     key={product._id}
                     product={product}
-                    onClick={() => handleProductClick(product._id)}
-                    cardWidth="w-full"
+                    onSelect={handleProductClick}
                   />
                 ))}
               </div>
