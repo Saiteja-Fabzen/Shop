@@ -137,10 +137,10 @@ export default function OrderDetailsPage() {
           <div className="bg-[#002E74] rounded-lg p-4 border-1 border-[#0053CF]">
             <h3 className="text-white font-semibold mb-4 flex items-center">
               <Package size={18} className="mr-2" />
-              Items ({order.products.length})
+              Items ({order.products?.length || 0})
             </h3>
             <div className="space-y-3">
-              {order.products.map((product, index) => (
+              {order.products?.map((product, index) => (
                 <div key={index} className="flex justify-between items-center py-2 border-b border-purple-700/50 last:border-b-0">
                   <div className="flex-1">
                     <p className="text-white text-sm">{product.productName}</p>
@@ -151,7 +151,7 @@ export default function OrderDetailsPage() {
                     <p className="text-gray-300 text-xs">Qty: {product.quantity}</p>
                   </div>
                   <div className="text-right">
-                    <p className="text-white font-medium">₹{product.pricePerUnit.toLocaleString()}</p>
+                    <p className="text-white font-medium">₹{product.pricePerUnit ? product.pricePerUnit.toLocaleString() : '0'}</p>
                     <p className="text-gray-400 text-xs">per unit</p>
                   </div>
                 </div>
@@ -160,7 +160,7 @@ export default function OrderDetailsPage() {
             <div className="border-t border-purple-700/50 pt-3 mt-3">
               <div className="flex justify-between items-center">
                 <span className="text-white font-semibold">Total Amount</span>
-                <span className="text-white font-bold text-lg">₹{order.totalGems.toLocaleString()}</span>
+                <span className="text-white font-bold text-lg">₹{order.totalGems ? order.totalGems.toLocaleString() : '0'}</span>
               </div>
             </div>
           </div>

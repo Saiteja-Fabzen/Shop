@@ -157,10 +157,10 @@ export default function OrdersPage() {
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-gray-300 text-sm">
-                        {order.products.length} item{order.products.length > 1 ? 's' : ''}
+                        {order.products?.length || 0} item{(order.products?.length || 0) > 1 ? 's' : ''}
                       </p>
                       <p className="text-white font-bold">
-                        ₹{order.totalGems.toLocaleString()}
+                        ₹{order.totalGems ? order.totalGems.toLocaleString() : '0'}
                       </p>
                     </div>
                     <div className="flex items-center">
