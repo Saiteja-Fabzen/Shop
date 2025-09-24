@@ -58,6 +58,7 @@ export default function Checkout({ params }: { params: Promise<{ id: string }> }
   const [submitting, setSubmitting] = useState(false);
   const [selectedVariation, setSelectedVariation] = useState<string>('');
   const [quantity, setQuantity] = useState(1);
+  const [quantityError, setQuantityError] = useState<string>('');
   const [walletBalance, setWalletBalance] = useState<number>(0);
   const [walletLoading, setWalletLoading] = useState(true);
   const [formData, setFormData] = useState({
@@ -118,6 +119,26 @@ export default function Checkout({ params }: { params: Promise<{ id: string }> }
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
+  };
+
+  const handleQuantityIncrease = () => {
+    if (!product) return;
+
+    if (quantity < product.stock) {
+      setQuantity(quantity + 1);
+      setQuantityError('');
+    } else {
+      setQuantityError(`Only ${product.stock} left`);
+      // Clear error after 3 seconds
+      setTimeout(() => setQuantityError(''), 3000);
+    }
+  };
+
+  const handleQuantityDecrease = () => {
+    if (quantity > 1) {
+      setQuantity(quantity - 1);
+      setQuantityError('');
+    }
   };
 
   const validateBasicDetails = () => {
@@ -530,24 +551,48 @@ export default function Checkout({ params }: { params: Promise<{ id: string }> }
         </div>
 
         {/* Quantity Selector */}
-        <div className="flex items-center justify-center space-x-4">
-          <button
-            onClick={() => setQuantity(Math.max(1, quantity - 1))}
-            className="w-10 h-10 bg-gray-700 text-white rounded-full flex items-center justify-center"
-          >
-            -
-          </button>
-          <span className="text-white text-lg font-bold">Qty: {quantity}</span>
-          <button
-            onClick={() => setQuantity(quantity + 1)}
-            className="w-10 h-10 bg-gray-700 text-white rounded-full flex items-center justify-center"
-          >
-            +
-          </button>
+        <div className="space-y-2">
+          <div className="flex items-center justify-center space-x-4">
+            <button
+              onClick={handleQuantityDecrease}
+              disabled={quantity <= 1}
+              className={`w-10 h-10 text-[25px] rounded-full flex items-center justify-center ${
+                quantity <= 1
+                  ? 'bg-gray-500 text-gray-300 cursor-not-allowed'
+                  : 'bg-gray-700 text-white hover:bg-gray-600'
+              }`}
+            >
+              -
+            </button>
+            <span className="text-white text-lg font-bold">Qty: {quantity}</span>
+            <button
+              onClick={handleQuantityIncrease}
+              disabled={product && quantity >= product.stock}
+              className={`w-10 h-10 text-[25px] rounded-full flex items-center justify-center ${
+                product && quantity >= product.stock
+                  ? 'bg-gray-500 text-gray-300 cursor-not-allowed'
+                  : 'bg-gray-700 text-white hover:bg-gray-600'
+              }`}
+            >
+              +
+            </button>
+          </div>
+          {quantityError && (
+            <div className="text-center">
+              <p className="text-red-400 text-sm font-medium">{quantityError}</p>
+            </div>
+          )}
+          {product && (
+            <div className="text-center">
+              <p className="text-purple-300 text-xs">
+                {product.stock} available in stock
+              </p>
+            </div>
+          )}
         </div>
 
         {/* Variation Selector */}
-        {product.variations.length > 0 && (
+        {product.variations.length > 1 && (
           <div>
             <label className="text-white text-sm mb-2 block">Select Variation</label>
             <select
@@ -585,13 +630,25 @@ export default function Checkout({ params }: { params: Promise<{ id: string }> }
       {/* Delivery Address */}
       <div className="border-t border-purple-700 pt-6">
         <p className="text-white font-bold mb-1">DELIVER TO:</p>
-        <div className="bg-[#000E4E] rounded-lg p-4 border border-purple-700/30">
+        <div
+          onClick={() => setCurrentStep(2)}
+          className="bg-[#000E4E] rounded-lg p-4 border border-purple-700/30 cursor-pointer hover:bg-[#001155] transition-colors"
+          role="button"
+          tabIndex={0}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              setCurrentStep(2);
+            }
+          }}
+          title="Click to edit address"
+        >
           <div className="flex items-center justify-between mb-2">
             <span className="text-white font-medium">{formData.name || 'Deepanjal Mitra'}</span>
             <span className="text-purple-200">{formData.phone}</span>
-            <button className="text-purple-300 hover:text-white">
+            <div className="text-purple-300">
               <ArrowLeft className="rotate-45" size={16} />
-            </button>
+            </div>
           </div>
           <p className="text-purple-200 text-sm">
             {formData.houseNo && `${formData.houseNo}, `}

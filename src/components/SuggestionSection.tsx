@@ -16,7 +16,7 @@ export default function SuggestionSection({ onSuggestProducts }: SuggestionSecti
           <div className="text-6xl">📦</div>
         </div>
         
-        <h3 className="text-white text-xl font-bold mb-2 leading-tight">
+        <h3 className="text-white text-[28px] font-bold mb-2 leading-tight">
           Didn&apos;t find what<br />
           you are looking<br />
           for?
