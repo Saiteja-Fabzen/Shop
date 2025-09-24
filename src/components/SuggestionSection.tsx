@@ -25,7 +25,7 @@ export default function SuggestionSection({ onSuggestProducts }: SuggestionSecti
       
       <button
         onClick={handleSuggestProducts}
-        className="w-full bg-gradient-button text-white font-bold py-4 px-6 rounded-lg hover:opacity-90 transition-opacity"
+        className="w-full bg-gradient-button text-black font-semibold py-4 px-6 rounded-lg hover:opacity-90 transition-opacity"
       >
         Suggest Products
       </button>

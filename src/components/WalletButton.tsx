@@ -40,7 +40,7 @@ export default function WalletButton({
           icon: 'w-4 h-4',
           iconSize: 16,
           spacing: 'mr-1',
-          text: 'font-semibold text-sm'
+          text: 'text-sm'
         };
       case 'large':
         return {
@@ -48,7 +48,7 @@ export default function WalletButton({
           icon: 'w-8 h-8',
           iconSize: 32,
           spacing: 'mr-3',
-          text: 'font-bold text-lg'
+          text: 'text-lg'
         };
       default: // medium
         return {
@@ -56,7 +56,7 @@ export default function WalletButton({
           icon: 'w-6 h-6',
           iconSize: 24,
           spacing: 'mr-2',
-          text: 'font-bold'
+          text: 'text-sm'
         };
     }
   };

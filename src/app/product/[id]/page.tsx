@@ -72,7 +72,7 @@ export default function ProductDetail({ params }: { params: Promise<{ id: string
     <div className="min-h-screen flex justify-center">
       <div className="w-full max-w-md mx-auto bg-gradient-to-b from-[#1a1a2e] to-[#16213e] min-h-screen">
         {/* Fixed Header */}
-        <header className="fixed top-0 left-1/2 transform -translate-x-1/2 w-full max-w-md px-4 py-3 text-white bg-[#212464] z-10 border-b border-purple-700/30 h-16">
+        <header className="fixed top-0 left-1/2 transform -translate-x-1/2 w-full max-w-md px-4 py-3 mt-4 text-white bg-[#212464] z-10 border-b border-purple-700/30 h-16">
           <div className="flex items-start justify-between h-full">
             <button onClick={() => router.back()} className="p-2 -ml-2 mt-1 flex-shrink-0">
               <ArrowLeft size={20} />
