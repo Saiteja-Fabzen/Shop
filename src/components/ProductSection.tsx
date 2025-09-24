@@ -22,9 +22,9 @@ export default function ProductSection({
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-white text-xl font-bold">{title}</h3>
         {showViewMore && (
-          <button 
+          <button
             onClick={onViewMore}
-            className="text-purple-200 text-sm"
+            className="text-yellow-400 text-sm font-medium"
           >
             View More
           </button>

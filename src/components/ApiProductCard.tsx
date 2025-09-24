@@ -64,7 +64,7 @@ export default function ApiProductCard({ product, onSelect, compact = false }: A
       </div>
 
       <div className="text-white">
-        <p className="font-medium text-md mb-1 line-clamp-2">{product.name}</p>
+        <p className="font-medium text-md mb-1 whitespace-nowrap overflow-hidden text-ellipsis">{product.name}</p>
         <div className="flex items-center">
           <img
             src="/images/gems.png"

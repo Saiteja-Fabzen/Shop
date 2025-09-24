@@ -83,24 +83,24 @@ export default function ApiCategoryGrid({ onCategorySelect }: ApiCategoryGridPro
     <div className="px-4 py-6">
       <h3 className="text-white text-xl font-bold mb-4">Top Categories</h3>
 
-      <div className="grid grid-cols-2 gap-4">
+      <div className="flex gap-3 overflow-x-auto scrollbar-hide">
         {allCategories.map((category) => (
           <button
             key={category.id}
             onClick={() => onCategorySelect?.(category.name)}
-            className="bg-[#002E74] rounded-xl p-4 border-1 border-[#0053CF] transition-colors"
+            className="transition-colors flex-shrink-0 min-w-[90px] flex flex-col"
           >
-            <div className="text-white font-medium mb-2 text-center text-sm">
-              {category.name}
-            </div>
-            <div className="rounded-lg h-16 flex items-center justify-center">
+            <div className="bg-[#002E74] border-1 border-[#0053CF] rounded-full h-16 w-16 flex items-center justify-center mb-2 mx-auto p-2">
               <Image
                 src={categoryIcons[category.name] || 'https://img.icons8.com/3d-fluency/94/smartphone.png'}
                 alt={category.name}
-                width={94}
-                height={94}
-                className="w-18 h-18"
+                width={48}
+                height={48}
+                className="w-10 h-10"
               />
+            </div>
+            <div className="text-white font-medium text-center text-xs">
+              {category.name}
             </div>
           </button>
         ))}

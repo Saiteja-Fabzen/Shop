@@ -16,6 +16,7 @@ export default function ProductDetail({ params }: { params: Promise<{ id: string
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [expandedSections, setExpandedSections] = useState<Set<number>>(new Set());
+  const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -72,15 +73,15 @@ export default function ProductDetail({ params }: { params: Promise<{ id: string
     <div className="min-h-screen flex justify-center">
       <div className="w-full max-w-md mx-auto bg-gradient-to-b from-[#1a1a2e] to-[#16213e] min-h-screen">
         {/* Fixed Header */}
-        <header className="fixed top-0 left-1/2 transform -translate-x-1/2 w-full max-w-md px-4 py-3 mt-4 text-white bg-[#212464] z-10 border-b border-purple-700/30 h-16">
-          <div className="flex items-start justify-between h-full">
-            <button onClick={() => router.back()} className="p-2 -ml-2 mt-1 flex-shrink-0">
+        <header className="fixed top-0 left-1/2 transform -translate-x-1/2 w-full max-w-md px-4 py-4 text-white bg-[#212464] z-10 border-b border-purple-700/30 h-16">
+          <div className="flex items-center justify-between h-full">
+            <button onClick={() => router.back()} className="p-2 -ml-2 flex-shrink-0">
               <ArrowLeft size={20} />
             </button>
-            <h1 className="text-sm font-bold flex-1 text-center mx-2 leading-tight line-clamp-2 overflow-hidden">
+            <h1 className="text-lg font-bold flex-1 text-center mx-2 whitespace-nowrap overflow-hidden text-ellipsis">
               {product.name}
             </h1>
-            <WalletButton size="medium" className="mt-1" />
+            <WalletButton size="small" />
           </div>
         </header>
 
@@ -94,8 +95,44 @@ export default function ProductDetail({ params }: { params: Promise<{ id: string
         {/* Product Info */}
         <div className="px-4 py-6">
           <h2 className="text-white text-xl font-bold mb-2">{product.name}</h2>
+
+          {/* Product Description */}
+          {product.description && (
+            <div className="mb-4">
+              <p className="text-gray-300 text-sm leading-relaxed">
+                {isDescriptionExpanded
+                  ? product.description
+                  : product.description.length > 150
+                    ? `${product.description.substring(0, 150)}...`
+                    : product.description
+                }
+                {product.description.length > 150 && (
+                  <button
+                    onClick={() => setIsDescriptionExpanded(!isDescriptionExpanded)}
+                    className="text-yellow-400 font-medium ml-2 hover:text-yellow-300 transition-colors"
+                  >
+                    {isDescriptionExpanded ? 'Show less' : 'Read more'}
+                  </button>
+                )}
+              </p>
+            </div>
+          )}
+
           <div className="flex items-center mb-4">
-            <div className="w-6 h-6 rounded-full flex items-center justify-center mr-2">
+            <img
+              src="/images/gems.png"
+              alt="Gems"
+              width={30}
+              height={30}
+              className="mr-1 flex-shrink-0"
+              onError={(e) => {
+                // Fallback to yellow circle if gems image not found
+                e.currentTarget.style.display = 'none';
+                const fallback = e.currentTarget.nextElementSibling as HTMLElement;
+                if (fallback) fallback.style.display = 'flex';
+              }}
+            />
+            <div className="w-6 h-6 bg-yellow-500 rounded-full items-center justify-center mr-2 flex-shrink-0" style={{ display: 'none' }}>
               <span className="text-xs font-bold text-purple-900">₹</span>
             </div>
             <span className="text-white font-bold text-2xl">
@@ -126,6 +163,7 @@ export default function ProductDetail({ params }: { params: Promise<{ id: string
               </span>
             </div>
           </div>
+
 
           {/* Brand Link */}
           <button

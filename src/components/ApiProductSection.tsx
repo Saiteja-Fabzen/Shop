@@ -94,7 +94,7 @@ export default function ApiProductSection({
         {showViewMore && (
           <button
             onClick={onViewMore}
-            className="text-purple-200 text-sm"
+            className="text-yellow-400 text-sm font-medium"
           >
             View More
           </button>

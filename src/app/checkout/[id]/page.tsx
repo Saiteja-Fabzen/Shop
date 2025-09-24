@@ -58,6 +58,7 @@ export default function Checkout({ params }: { params: Promise<{ id: string }> }
   const [submitting, setSubmitting] = useState(false);
   const [selectedVariation, setSelectedVariation] = useState<string>('');
   const [quantity, setQuantity] = useState(1);
+  const [quantityError, setQuantityError] = useState<string>('');
   const [walletBalance, setWalletBalance] = useState<number>(0);
   const [walletLoading, setWalletLoading] = useState(true);
   const [formData, setFormData] = useState({
@@ -120,7 +121,139 @@ export default function Checkout({ params }: { params: Promise<{ id: string }> }
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
+  const handleQuantityIncrease = () => {
+    if (!product) return;
+
+    if (quantity < product.stock) {
+      setQuantity(quantity + 1);
+      setQuantityError('');
+    } else {
+      setQuantityError(`Only ${product.stock} left`);
+      // Clear error after 3 seconds
+      setTimeout(() => setQuantityError(''), 3000);
+    }
+  };
+
+  const handleQuantityDecrease = () => {
+    if (quantity > 1) {
+      setQuantity(quantity - 1);
+      setQuantityError('');
+    }
+  };
+
+  const validateBasicDetails = () => {
+    const { name, email, phone } = formData;
+
+    if (!name.trim()) {
+      alert('Please enter your name');
+      return false;
+    }
+
+    if (!email.trim()) {
+      alert('Please enter your email');
+      return false;
+    }
+
+    // Basic email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      alert('Please enter a valid email address');
+      return false;
+    }
+
+    if (!phone.trim()) {
+      alert('Please enter your phone number');
+      return false;
+    }
+
+    // Basic phone validation (10 digits)
+    const phoneRegex = /^\d{10}$/;
+    if (!phoneRegex.test(phone.replace(/\D/g, ''))) {
+      alert('Please enter a valid 10-digit phone number');
+      return false;
+    }
+
+    return true;
+  };
+
+  const validateAddress = () => {
+    const { houseNo, city, state, pincode } = formData;
+
+    if (!houseNo.trim()) {
+      alert('Please enter your house number/building name');
+      return false;
+    }
+
+    if (!city.trim()) {
+      alert('Please enter your city');
+      return false;
+    }
+
+    if (!state.trim()) {
+      alert('Please select your state');
+      return false;
+    }
+
+    if (!pincode.trim()) {
+      alert('Please enter your pincode');
+      return false;
+    }
+
+    // Basic pincode validation (6 digits)
+    const pincodeRegex = /^\d{6}$/;
+    if (!pincodeRegex.test(pincode)) {
+      alert('Please enter a valid 6-digit pincode');
+      return false;
+    }
+
+    return true;
+  };
+
+  const isBasicDetailsComplete = () => {
+    const { name, email, phone } = formData;
+    const isNameValid = name.trim().length > 0;
+    const isEmailValid = email.trim().length > 0 && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
+    const cleanPhone = phone.replace(/\D/g, '');
+    const isPhoneValid = cleanPhone.length >= 10;
+
+    console.log('Validation check:', { name: isNameValid, email: isEmailValid, phone: isPhoneValid, cleanPhone });
+
+    return isNameValid && isEmailValid && isPhoneValid;
+  };
+
+  const isAddressComplete = () => {
+    const { houseNo, city, state, pincode } = formData;
+    const isHouseNoValid = houseNo.trim().length > 0;
+    const isCityValid = city.trim().length > 0;
+    const isStateValid = state.trim().length > 0;
+    const cleanPincode = pincode.replace(/\D/g, '');
+    const isPincodeValid = cleanPincode.length >= 6;
+
+    console.log('Address validation:', { houseNo: isHouseNoValid, city: isCityValid, state: isStateValid, pincode: isPincodeValid, cleanPincode });
+
+    return isHouseNoValid && isCityValid && isStateValid && isPincodeValid;
+  };
+
+  const canProceedToNext = () => {
+    if (currentStep === 1) {
+      return isBasicDetailsComplete();
+    } else if (currentStep === 2) {
+      return isAddressComplete();
+    }
+    return true;
+  };
+
   const handleNext = () => {
+    if (currentStep === 1) {
+      if (!validateBasicDetails()) {
+        return;
+      }
+    } else if (currentStep === 2) {
+      if (!validateAddress()) {
+        return;
+      }
+    }
+
     if (currentStep < 3) {
       setCurrentStep(currentStep + 1);
     }
@@ -205,44 +338,59 @@ export default function Checkout({ params }: { params: Promise<{ id: string }> }
     }
   };
 
-  const renderStepIndicator = () => (
-    <div className="flex items-center justify-center mb-6">
-      {[1, 2, 3].map((step) => (
-        <div key={step} className="flex items-center">
-          <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${
-            step <= currentStep ? 'bg-[#212464] text-white border-2 border-purple-400' : 'bg-[#000E4E] text-purple-300 border-2 border-purple-700'
-          }`}>
-            {step}
-          </div>
-          {step < 3 && (
-            <div className={`w-16 h-0.5 mx-2 ${
-              step < currentStep ? 'bg-[#212464]' : 'bg-purple-700'
-            }`} />
-          )}
-        </div>
-      ))}
-    </div>
-  );
+  const renderStepIndicator = () => {
+    const steps = [
+      { number: 1, label: 'Basic Details' },
+      { number: 2, label: 'Address' },
+      { number: 3, label: 'Summary' }
+    ];
 
-  const renderStepLabels = () => (
-    <div className="flex justify-between mb-8 text-sm">
-      <div className="text-center">
-        <p className={currentStep >= 1 ? 'text-white font-medium' : 'text-purple-300'}>
-          Basic<br />Details
-        </p>
+    return (
+      <div className="mb-8">
+        {/* Step circles and connecting lines */}
+        <div className="flex items-center justify-center mb-4">
+          {steps.map((step, index) => (
+            <div key={step.number} className="flex items-center">
+              <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${
+                step.number <= currentStep
+                  ? 'bg-gradient-to-b from-yellow-400 via-yellow-300 to-yellow-400 border-2 border-yellow-300 text-orange-800'
+                  : 'bg-[#000E4E] text-purple-300 border-2 border-[#002E74]'
+              }`}>
+                {step.number}
+              </div>
+              {index < steps.length - 1 && (
+                <div className={`w-16 h-0.5 mx-2 ${
+                  step.number < currentStep
+                    ? 'bg-gradient-to-r from-yellow-400 to-yellow-300'
+                    : 'bg-[#002E74]'
+                }`} />
+              )}
+            </div>
+          ))}
+        </div>
+
+        {/* Step labels aligned with circles */}
+        <div className="flex justify-between px-1">
+          {steps.map((step) => (
+            <div key={step.number} className="text-center flex-1">
+              <p className={`text-xs leading-tight ${
+                currentStep >= step.number
+                  ? 'text-yellow-400 font-medium'
+                  : 'text-purple-300'
+              }`}>
+                {step.label.split('\n').map((line, i) => (
+                  <span key={i}>
+                    {line}
+                    {i === 0 && step.label.includes('\n') && <br />}
+                  </span>
+                ))}
+              </p>
+            </div>
+          ))}
+        </div>
       </div>
-      <div className="text-center">
-        <p className={currentStep >= 2 ? 'text-white font-medium' : 'text-purple-300'}>
-          Address
-        </p>
-      </div>
-      <div className="text-center">
-        <p className={currentStep >= 3 ? 'text-white font-medium' : 'text-purple-300'}>
-          Summary
-        </p>
-      </div>
-    </div>
-  );
+    );
+  };
 
   const renderBasicDetails = () => (
     <div className="space-y-4">
@@ -274,9 +422,10 @@ export default function Checkout({ params }: { params: Promise<{ id: string }> }
           <Lock className="absolute left-4 top-1/2 transform -translate-y-1/2 text-purple-600" size={16} />
           <input
             type="tel"
+            placeholder="Enter your phone number"
             value={formData.phone}
             onChange={(e) => handleInputChange('phone', e.target.value)}
-            className="w-full bg-white rounded-lg p-4 pl-12 text-gray-900 border border-purple-200 focus:border-purple-400 focus:outline-none"
+            className="w-full bg-white rounded-lg p-4 pl-12 text-gray-900 placeholder-gray-500 border border-purple-200 focus:border-purple-400 focus:outline-none"
           />
         </div>
       </div>
@@ -402,24 +551,48 @@ export default function Checkout({ params }: { params: Promise<{ id: string }> }
         </div>
 
         {/* Quantity Selector */}
-        <div className="flex items-center justify-center space-x-4">
-          <button
-            onClick={() => setQuantity(Math.max(1, quantity - 1))}
-            className="w-10 h-10 bg-gray-700 text-white rounded-full flex items-center justify-center"
-          >
-            -
-          </button>
-          <span className="text-white text-lg font-bold">Qty: {quantity}</span>
-          <button
-            onClick={() => setQuantity(quantity + 1)}
-            className="w-10 h-10 bg-gray-700 text-white rounded-full flex items-center justify-center"
-          >
-            +
-          </button>
+        <div className="space-y-2">
+          <div className="flex items-center justify-center space-x-4">
+            <button
+              onClick={handleQuantityDecrease}
+              disabled={quantity <= 1}
+              className={`w-10 h-10 text-[25px] rounded-full flex items-center justify-center ${
+                quantity <= 1
+                  ? 'bg-gray-500 text-gray-300 cursor-not-allowed'
+                  : 'bg-gray-700 text-white hover:bg-gray-600'
+              }`}
+            >
+              -
+            </button>
+            <span className="text-white text-lg font-bold">Qty: {quantity}</span>
+            <button
+              onClick={handleQuantityIncrease}
+              disabled={product && quantity >= product.stock}
+              className={`w-10 h-10 text-[25px] rounded-full flex items-center justify-center ${
+                product && quantity >= product.stock
+                  ? 'bg-gray-500 text-gray-300 cursor-not-allowed'
+                  : 'bg-gray-700 text-white hover:bg-gray-600'
+              }`}
+            >
+              +
+            </button>
+          </div>
+          {quantityError && (
+            <div className="text-center">
+              <p className="text-red-400 text-sm font-medium">{quantityError}</p>
+            </div>
+          )}
+          {product && (
+            <div className="text-center">
+              <p className="text-purple-300 text-xs">
+                {product.stock} available in stock
+              </p>
+            </div>
+          )}
         </div>
 
         {/* Variation Selector */}
-        {product.variations.length > 0 && (
+        {product.variations.length > 1 && (
           <div>
             <label className="text-white text-sm mb-2 block">Select Variation</label>
             <select
@@ -457,13 +630,25 @@ export default function Checkout({ params }: { params: Promise<{ id: string }> }
       {/* Delivery Address */}
       <div className="border-t border-purple-700 pt-6">
         <p className="text-white font-bold mb-1">DELIVER TO:</p>
-        <div className="bg-[#000E4E] rounded-lg p-4 border border-purple-700/30">
+        <div
+          onClick={() => setCurrentStep(2)}
+          className="bg-[#000E4E] rounded-lg p-4 border border-purple-700/30 cursor-pointer hover:bg-[#001155] transition-colors"
+          role="button"
+          tabIndex={0}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              setCurrentStep(2);
+            }
+          }}
+          title="Click to edit address"
+        >
           <div className="flex items-center justify-between mb-2">
             <span className="text-white font-medium">{formData.name || 'Deepanjal Mitra'}</span>
             <span className="text-purple-200">{formData.phone}</span>
-            <button className="text-purple-300 hover:text-white">
+            <div className="text-purple-300">
               <ArrowLeft className="rotate-45" size={16} />
-            </button>
+            </div>
           </div>
           <p className="text-purple-200 text-sm">
             {formData.houseNo && `${formData.houseNo}, `}
@@ -536,14 +721,15 @@ export default function Checkout({ params }: { params: Promise<{ id: string }> }
     <div className="min-h-screen flex justify-center">
       <div className="w-full max-w-md mx-auto bg-gradient-to-b from-[#1a1a2e] to-[#16213e] min-h-screen">
         {/* Header */}
-        <header className="fixed top-0 left-1/2 transform -translate-x-1/2 w-full max-w-md px-4 py-3 mt-4 text-white bg-[#212464] z-10 border-b border-purple-700/30 h-16">
-          <div className="flex items-start h-full">
-            <button onClick={handleBack} className="p-2 -ml-2 mt-1 flex-shrink-0">
+        <header className="fixed top-0 left-1/2 transform -translate-x-1/2 w-full max-w-md px-4 py-4 text-white bg-[#212464] z-10 border-b border-purple-700/30 h-16">
+          <div className="flex items-center justify-between h-full">
+            <button onClick={handleBack} className="p-2 -ml-2 flex-shrink-0">
               <ArrowLeft size={20} />
             </button>
-            <h1 className="text-sm font-bold flex-1 text-center mx-2 leading-tight line-clamp-2 overflow-hidden">
+            <h1 className="text-lg font-bold flex-1 text-center mx-2 whitespace-nowrap overflow-hidden text-ellipsis">
               {product?.name}
             </h1>
+            <WalletButton size="small" />
           </div>
         </header>
 
@@ -551,7 +737,6 @@ export default function Checkout({ params }: { params: Promise<{ id: string }> }
         <div className="pt-16 pb-24 overflow-y-auto">
         <div className="px-4 py-6">
           {renderStepIndicator()}
-          {renderStepLabels()}
 
           {currentStep === 1 && renderBasicDetails()}
           {currentStep === 2 && renderAddress()}
@@ -564,7 +749,12 @@ export default function Checkout({ params }: { params: Promise<{ id: string }> }
           {currentStep < 3 ? (
             <button
               onClick={handleNext}
-              className="w-full bg-gradient-button text-black font-bold py-4 px-6 rounded-full hover:opacity-90 transition-opacity"
+              disabled={!canProceedToNext()}
+              className={`w-full font-bold py-4 px-6 rounded-full transition-opacity ${
+                canProceedToNext()
+                  ? 'bg-gradient-button text-black hover:opacity-90'
+                  : 'bg-gray-500 text-gray-300 cursor-not-allowed opacity-50'
+              }`}
             >
               Next →
             </button>
