@@ -10,7 +10,7 @@ export default function Header() {
   };
 
   return (
-    <header className="px-4 py-3 text-white safe-top">
+    <header className="px-4 py-3 mt-4 text-white safe-top">
       <div className="flex items-center justify-between">
         <h1 className="text-xl font-bold">Shop</h1>
         

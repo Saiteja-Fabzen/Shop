@@ -76,7 +76,7 @@ export default function OrderDetailsPage() {
     return (
       <div className="min-h-screen flex justify-center">
         <div className="w-full max-w-md mx-auto bg-gradient-to-b from-[#1a1a2e] to-[#16213e] min-h-screen">
-          <header className="px-4 py-3 text-white safe-top">
+          <header className="px-4 py-3 mt-4 text-white safe-top">
             <div className="flex items-center space-x-4">
               <button
                 onClick={() => router.back()}
@@ -106,7 +106,7 @@ export default function OrderDetailsPage() {
   return (
     <div className="min-h-screen flex justify-center">
       <div className="w-full max-w-md mx-auto bg-gradient-to-b from-[#1a1a2e] to-[#16213e] min-h-screen">
-        <header className="px-4 py-3 text-white safe-top">
+        <header className="px-4 py-3 mt-4 text-white safe-top">
           <div className="flex items-center space-x-4">
             <button
               onClick={() => router.back()}
