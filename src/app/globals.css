@@ -117,8 +117,7 @@ body {
 /* Custom focus styles for better accessibility */
 button:focus,
 input:focus {
-  outline: 2px solid #a855f7;
-  outline-offset: 2px;
+  outline: none;
 }
 
 /* Touch-friendly tap targets */
